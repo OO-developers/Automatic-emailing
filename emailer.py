@@ -97,7 +97,7 @@ if __name__== '__main__':
     cur = conn.cursor(cursor_factory = psycopg2.extras.RealDictCursor)
 
     #Create some dummy test data
-    create_test_action(cur,conn)
+    #create_test_action(cur,conn)
     
     cur.execute("""SELECT id,templateurl,action_parameters from actions WHERE completed is null and failed = false and locked=false""")
     rows = cur.fetchall()
