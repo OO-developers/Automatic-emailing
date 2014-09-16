@@ -1,4 +1,5 @@
-#High-level overview of what this script does:
+#Copyright Time at Task Aps 2014. All rights reserved. David Andersen owns all the code you create for this project.
+# High-level overview of what this script does:
 # 1. Read actions data from postgres, get url and params
 # 2. Post data read from postrgres to ultradox
 # 3. Update action with response from ultradox
@@ -9,8 +10,6 @@ from datetime import datetime
 import psycopg2.extras
 
 #Conguration Parameters
-
-
 db_config = {
  "host": "ec2-107-22-165-91.compute-1.amazonaws.com", 
  "port": "5432", 
@@ -19,32 +18,35 @@ db_config = {
  "password": "r5p3V1zxwX28KHpuJqaDkGBPJf"
 }
 
-
-db_config_test = {
- "port": "5433", 
- "host": "localhost", 
- "password": "simple", 
- "dbname": "sample", 
- "user": "postgres"
-}
-
-headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+#This is a contant required for correctly posting JSON requests
+HEADERS = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
 
 def post_data(url,data):
+    """
+    This function posts a JSON request to a an end point and returns the JSON response as python dictionary, if any or None
+    This is used by the main method
+    Parameters:
+        url -> The URL to end point that expects a JSON request
+        data -> Python dictionary and lists structure resembling JSON to be posted as body of request
+    """
     #JSONify data
     json_data = json.dumps(data, sort_keys = False, indent = 4)
     #Make JSON request to Ultradox
-    p = requests.post(url, json_data, headers=headers)
+    post = requests.post(url, json_data, headers=HEADERS)
     #Only return JSON response if STATUS 200 OK recieved from Ultradox, otherwise return None
-    if p.status_code == 200:
-        return p.json()
+    if post.status_code == 200:
+        return post.json()
     else:
         return None
 
 def get_doc_link(message):
     """
-    This function parses JSON to extract links to generated documents
+    This function parses JSON returned by Ultradox to extract links to generated documents
+    Returns a python list of document links extracted, if any, or an empty list
+    This is used by the main method
+    Parameters:
+        message -> Python dictionary resturned as JSON response from Ultradox
     """
     #Initialize document links to empty list
     doc_links = []
@@ -57,10 +59,16 @@ def get_doc_link(message):
     return doc_links
 
 def create_test_action(cur,conn):
-    #This function is used to create dummy data for test purposes
+    """
+    This function is used to create dummy data for test purposes
+    This is not required for Production and should be removed upon deployment
+    Parameters:
+        cur -> database cursor
+        conn -> database connection
+    """
     #url = 'http://www.ultradox.com/run?id=JGyB74N0XdpSXAsqWa2jocwIeuL24A'
-    url = 'http://www.ultradox.com/run?id=lkbnOcF04yCsvxmOlavCr92D0CKd7v'
-    #url = 'http://www.ultradox.com/run?id=R2gaiMg1IwvDqjNUCxkZaNl00N4JY5'
+    #url = 'http://www.ultradox.com/run?id=lkbnOcF04yCsvxmOlavCr92D0CKd7v'
+    url = 'http://www.ultradox.com/run?id=R2gaiMg1IwvDqjNUCxkZaNl00N4JY5'
     data = {'string':'Shuaib',
             'integer':'99',
             'date': '2008-02-01T09:00:22+05:00',
@@ -70,7 +78,17 @@ def create_test_action(cur,conn):
     print cur.query
     conn.commit()
     
-if __name__=='__main__':
+if __name__== '__main__':
+    """
+    This is the method that will be called whenever this script is invoked. It requires no input parameters
+    It will:
+        Read any pending actions from the actions table
+        If any actions are picked up, for each action:
+            Read the templateURL and action_parameters from database
+            Post a JSON request using the above parameters
+            Read the JSON response from Ultradox and handle common error conditions
+            Update the db row with success and response or failure
+    """
     #Connect to the database
     conn = psycopg2.connect(" ".join("{0}='{1}'".format(k,v) for k,v in db_config.iteritems()))
     #Configure the postgres connection to be able to handle python data objects in postgres hstores and arrays
@@ -79,7 +97,7 @@ if __name__=='__main__':
     cur = conn.cursor(cursor_factory = psycopg2.extras.RealDictCursor)
 
     #Create some dummy test data
-    #create_test_action(cur,conn)
+    create_test_action(cur,conn)
     
     cur.execute("""SELECT id,templateurl,action_parameters from actions WHERE completed is null and failed = false and locked=false""")
     rows = cur.fetchall()
@@ -108,6 +126,7 @@ if __name__=='__main__':
                     #No errors were encountered, process and update response to database
                     doc_links = get_doc_link(response)
                     cur.execute('UPDATE actions SET locked=false, failed=false, completed=now(), message_from_executor=%s, document_links=%s WHERE id=%s',[json.dumps(response),doc_links,rec_id])
+                    print "action_id %s successfully processed!" % str(rec_id)
             else:
                 #Expected JSON response was not recieved, update database with failure flag
                 cur.execute('UPDATE actions SET locked=false, failed=true, message_from_executor=%s WHERE id=%s',[json.dumps(response),rec_id])
@@ -118,6 +137,8 @@ if __name__=='__main__':
 
         #Commit updates
         conn.commit()
+    
+    conn.close()
 
 
                 
