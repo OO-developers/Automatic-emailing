@@ -10,7 +10,17 @@ import psycopg2.extras
 
 #Conguration Parameters
 
+
 db_config = {
+ "host": "ec2-107-22-165-91.compute-1.amazonaws.com", 
+ "port": "5432", 
+ "dbname": "desvm4038gqi5j",
+ "user": "fehvvlrigocyeq",
+ "password": "r5p3V1zxwX28KHpuJqaDkGBPJf"
+}
+
+
+db_config_test = {
  "port": "5433", 
  "host": "localhost", 
  "password": "simple", 
