@@ -11,11 +11,11 @@ import psycopg2.extras
 
 #Conguration Parameters
 db_config = {
- "host": "ec2-107-22-165-91.compute-1.amazonaws.com", 
+ "host": "amazonaws.com", 
  "port": "5432", 
- "dbname": "desvm4038gqi5j",
- "user": "fehvvlrigocyeq",
- "password": "r5p3V1zxwX28KHpuJqaDkGBPJf"
+ "dbname": "",
+ "user": "",
+ "password": ""
 }
 
 #This is a contant required for correctly posting JSON requests
