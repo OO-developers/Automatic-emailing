@@ -106,7 +106,7 @@ def read_invoices():
     Created for test purposes, not intended to be used in production
     """
     try:
-        gc = gspread.login(gs_config['email'],gs['password'])
+        gc = gspread.login(gs_config['email'],gs_config['password'])
         sh = gc.open_by_key('1G5ispFcCHw3ejVitV91xmdLFXhKOjn2E8JQ8fSmMCg0')
         ws = sh.get_worksheet(0)
         rows = ws.get_all_values()
