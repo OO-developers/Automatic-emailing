@@ -54,7 +54,7 @@ def post_data(url,data):
     json_data = json.dumps(data, sort_keys = False, indent = 4)
     #Make JSON request to Ultradox
     post = requests.post(url, json_data, headers=HEADERS)
-    #Only return JSON response if STATUS 200 OK recieved from Ultradox, otherwise return None
+    #Only return JSON response if STATUS 200 OK received from Ultradox, otherwise return None
     if post.status_code == 200:
         return post.json()
     else:
@@ -167,7 +167,7 @@ if __name__== '__main__':
         #Create cursor object with results to be returned in dictionary format
         cur = conn.cursor(cursor_factory = psycopg2.extras.RealDictCursor)
 
-        #Attempt to obtain and advisory lock, exit if a lock is already held.
+        #Attempt to obtain an advisory lock, exit if a lock is already held.
         cur.execute('SELECT pg_try_advisory_lock(987654321);')
         if not cur.fetchone()['pg_try_advisory_lock']:
             raise SystemExit(0)
@@ -192,7 +192,7 @@ if __name__== '__main__':
             
                 #Continue only if some response was received
                 if response:
-                    #Check if an expected JSON response was recieved with 'steps' key, otherwise log failure
+                    #Check if an expected JSON response was received with 'steps' key, otherwise log failure
                     if response.has_key('steps'):
                         #Check returned response from Ultradox for any failure messages
                         l = [step['success'] for step in response['steps']]
@@ -205,12 +205,12 @@ if __name__== '__main__':
                             cur.execute('UPDATE actions SET failed=false, completed=now(), message_from_executor=%s, document_links=%s WHERE id=%s',[json.dumps(response),doc_links,rec_id])
                             print "action_id %s successfully processed!" % str(rec_id)
                     else:
-                        #Expected JSON response was not recieved, update database with failure flag
+                        #Expected JSON response was not received, update database with failure flag
                         cur.execute('UPDATE actions SET failed=true, message_from_executor=%s WHERE id=%s',[json.dumps(response),rec_id])
                     
                 else:
-                    #No response was recieved, log failure
-                    cur.execute('UPDATE actions SET failed=true, message_from_executor=%s WHERE id=%s',['No Response Recieved',rec_id])
+                    #No response was received, log failure
+                    cur.execute('UPDATE actions SET failed=true, message_from_executor=%s WHERE id=%s',['No Response received',rec_id])
 
                 #Commit updates
                 conn.commit()
