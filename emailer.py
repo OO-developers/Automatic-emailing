@@ -5,7 +5,7 @@
 # 3. Update action with response from ultradox
 # 4. Extract links to any documents created by ultradox and update them to database
 
-import requests, psycopg2, json, gspread
+import requests, psycopg2, json
 from datetime import datetime
 import psycopg2.extras
 import httplib
@@ -98,55 +98,6 @@ def create_test_action(cur,conn):
     cur.execute("INSERT INTO actions (customer_id, templateurl, action_parameters) VALUES (1,%s,%s)", [url,data])
     print cur.query
     conn.commit()
-
-def read_invoices():
-    """
-    Reads Google Spreadsheet with next actions
-    Returns a list of dictionaries, where a dictionary is a record read from the spreadsheet
-    Created for test purposes, not intended to be used in production
-    """
-    try:
-        gc = gspread.login(gs_config['email'],gs_config['password'])
-        sh = gc.open_by_key('1G5ispFcCHw3ejVitV91xmdLFXhKOjn2E8JQ8fSmMCg0')
-        ws = sh.get_worksheet(0)
-        rows = ws.get_all_values()
-        cols = [col.replace(' ','').strip().lower() for col in rows.pop(0)]
-        data = [{k:v for k,v in zip(cols,row)} for row in rows]
-        action_rows = [row for row in data if len(row['customeremail'].strip()) and len(row['invoicecounter'].strip())]
-        print len(action_rows)
-        #if col in ultradox_cols
-        
-    except httplib.CannotSendRequest:
-        print "HTTP Error while reading invoice data from Google spreadsheet"
-        raise
-    except httplib.BadStatusLine:
-        print "HTTP Error while reading invoice data from Google spreadsheet"
-        raise
-
-    return [action_rows[1]]
-
-def write_invoices_to_db(action_rows):
-    """
-    Writes a list of dictionaries, each representing one invoice to the actions table
-    [{},{}, ...] -> None
-    Intended to be replaced by a database function
-    """
-    try:
-        INVOICE_URL = "http://www.ultradox.com/run?id=f615pzXmP0PM9oyT6HJsglcrTtWWyl"#"http://www.ultradox.com/run?id=3zEV2UR1dtp9Qsgd6Tytomr7f3pZt5"
-        TEMPLATE_COLS = ['amount', 'amountincludingvat', 'betalingsfristtekst', 'companyaddress', 'companyname', 'duedate', 'invoicecounter', 'servicetext', 'todaysdate', 'vat','customeremail']
-        conn = psycopg2.connect(" ".join("{0}='{1}'".format(k,v) for k,v in db_config.iteritems()))
-        psycopg2.extras.register_hstore(conn)
-        cur = conn.cursor(cursor_factory = psycopg2.extras.RealDictCursor)
-        print len(action_rows)
-        for row in action_rows:
-            data = {k:v for k,v in row.iteritems() if k in TEMPLATE_COLS}
-            cur.execute("INSERT INTO actions (customer_id, templateurl, action_parameters) VALUES (%s,%s,%s)", [row['customerid'],INVOICE_URL,data])
-        conn.commit()
-    except:
-        print "DB Error while writing invoices to database"
-        raise
-    finally:
-        conn.close()
         
 if __name__== '__main__':
     """
@@ -171,6 +122,7 @@ if __name__== '__main__':
         cur.execute('SELECT pg_try_advisory_lock(987654321);')
         if not cur.fetchone()['pg_try_advisory_lock']:
             raise SystemExit(0)
+
         #The above code would prevent the script to continue, if another instance of the script is already running
         
         
