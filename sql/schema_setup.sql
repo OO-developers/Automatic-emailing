@@ -19,5 +19,7 @@ CREATE TABLE actions (
 	completed TIMESTAMP(6), 
 	failed boolean NOT NULL DEFAULT FALSE, 
 	message_from_executor varchar(9999), 
-	document_links text[]
+	document_links text[],
+	schedule_datetime TIMESTAMP(6) 
+	
 	);
