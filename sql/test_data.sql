@@ -10,11 +10,13 @@ Note that both paramters to hstore should be strings and should use single quote
 INSERT INTO actions (
 	customer_id,
 	templateurl,
+	schedule_datetime,
 	action_parameters
 	) 
 VALUES (
 	997,
 	'http://www.ultradox.com/run?id=f615pzXmP0PM9oyT6HJsglcrTtWWyl',
+	'2015-02-26 20:38:40',
 	'"vat"=>"1,700.00", 
 	"amount"=>"6,800.00", 
 	"duedate"=>"9/8/14", 

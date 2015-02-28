@@ -130,7 +130,7 @@ if __name__== '__main__':
         #create_test_action(cur,conn)
         #write_invoices_to_db(read_invoices())
         
-        cur.execute("""SELECT id,templateurl,action_parameters from actions WHERE completed is null and failed = false""")
+        cur.execute("""SELECT id,templateurl,action_parameters from actions WHERE completed is null and failed = false and ((schedule_datetime > CURRENT_TIMESTAMP) or (schedule_datetime is null))""")
         
         rows = cur.fetchall()
 
