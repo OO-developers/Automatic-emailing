@@ -1,3 +1,24 @@
+#Copyright Time at Task Aps 2014. All rights reserved. David Andersen owns all the code you create for this project.
+# 
+# The purpose of this project is to be able to send emails from a postgres database. 
+# To utilize this solution all one needs to do is to add a row to a postgres table (named "actions"), this 
+# row will contain the email address of the receiver, the subject, content etc.
+# To actually send the emails we use ultradox.com and we execute a "template" there by visiting its "run" url and passing a
+# JSON document with all the parameters
+#
+# This file (emailer.py) will look for unprocessed rows is the "actions" table and execute these actions.
+# You can test this solution by doing the following:
+# 1. Use SSH to log onto our test-server, using the credentials found in the middle of this document: 
+#    https://docs.google.com/document/d/1biEViRLFwlG7GnO_NHYa6m_U0YiUKU9oNpRoCcO4xak/edit
+# 2. Go to the directory named /root/py_emailer
+# 3. Write python listener.py to execute this file. This file will run continuously and wait for postgres to notify it of
+#    a new even
+# 4. Connect to the postgres database using for example PgAdmin III using the credentials found around line 30 in this file.
+# 5. Run the SQL statement found in https://github.com/OO-developers/Automatic-emailing/blob/master/sql/test_data.sql 
+#    to add a new action to the actions table. In that statement, please replace the example email address with your own.
+# 6. Run the SQL statement "notify emailer;" to notify the python program
+# 6. Wait for an email to arrive in your inbox.
+
 #This is the listener component of the Automatic Emailing service
 #It listens to any notifications sent by Postgre on a speicified channel and invokes the emailer.py script
 #Any error messages are logged to syslog
